@@ -811,6 +811,11 @@
     <option value="2">Operador 3</option>
     <option value="3">Operador 4</option>
     <option value="4">Operador 5</option>
+    <option value="5">Operador 6</option>
+    <option value="6">Operador 7</option>
+    <option value="7">Operador 8</option>
+    <option value="8">Operador 9</option>
+    <option value="9">Operador 10</option>
   </select>
   <span class="op-range" id="opRange"></span>
 
@@ -883,7 +888,7 @@ Escuela Sindical Arnoldo Camú Veloso - Universidad de Valparaíso`;
 
 // ── ESTADO ────────────────────────────────────────────────────────────────────
 const TOTAL = CONTACTS.length;
-const OPERATORS = 5;
+const OPERATORS = 10;
 let status = JSON.parse(localStorage.getItem('wa_status') || 'null') || CONTACTS.map(() => 'pending');
 let currentIdx = null;
 let currentFilter = 'all';
