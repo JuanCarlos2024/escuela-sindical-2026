@@ -805,6 +805,7 @@
 <div class="operator-bar">
   <span class="op-label">👤 Operador:</span>
   <select class="op-select" id="operatorSelect" onchange="applyOperatorRange()">
+    <option value="all">👁 Todos (sin filtro)</option>
     <option value="0">Operador 1</option>
     <option value="1">Operador 2</option>
     <option value="2">Operador 3</option>
@@ -886,7 +887,7 @@ const OPERATORS = 5;
 let status = JSON.parse(localStorage.getItem('wa_status') || 'null') || CONTACTS.map(() => 'pending');
 let currentIdx = null;
 let currentFilter = 'all';
-let operatorIdx = 0;
+let operatorIdx = -1; // -1 = Todos
 let opStart = 0, opEnd = TOTAL - 1;
 
 // Save state
@@ -896,12 +897,20 @@ function saveState() {
 
 // ── OPERATOR RANGE ────────────────────────────────────────────────────────────
 function applyOperatorRange() {
-  operatorIdx = parseInt(document.getElementById('operatorSelect').value);
-  const chunkSize = Math.ceil(TOTAL / OPERATORS);
-  opStart = operatorIdx * chunkSize;
-  opEnd = Math.min(opStart + chunkSize - 1, TOTAL - 1);
-  document.getElementById('opRange').textContent =
-    `Contactos ${opStart + 1} – ${opEnd + 1} (${opEnd - opStart + 1} asignados)`;
+  const val = document.getElementById('operatorSelect').value;
+  if (val === 'all') {
+    operatorIdx = -1;
+    opStart = 0;
+    opEnd = TOTAL - 1;
+    document.getElementById('opRange').textContent = `Mostrando todos los contactos (${TOTAL})`;
+  } else {
+    operatorIdx = parseInt(val);
+    const chunkSize = Math.ceil(TOTAL / OPERATORS);
+    opStart = operatorIdx * chunkSize;
+    opEnd = Math.min(opStart + chunkSize - 1, TOTAL - 1);
+    document.getElementById('opRange').textContent =
+      `Contactos ${opStart + 1} – ${opEnd + 1} (${opEnd - opStart + 1} asignados)`;
+  }
   renderList();
 }
 
@@ -927,8 +936,13 @@ function matchesSearch(i) {
   return c.nombre.toLowerCase().includes(q) || c.tel.includes(q);
 }
 
+function inOperatorRange(i) {
+  if (operatorIdx === -1) return true; // "Todos"
+  return i >= opStart && i <= opEnd;
+}
+
 function visibleIndices() {
-  return CONTACTS.map((_, i) => i).filter(i => matchesFilter(i) && matchesSearch(i));
+  return CONTACTS.map((_, i) => i).filter(i => inOperatorRange(i) && matchesFilter(i) && matchesSearch(i));
 }
 
 // ── STATS ─────────────────────────────────────────────────────────────────────
@@ -1039,7 +1053,7 @@ function renderPanel() {
       <div class="card-meta">
         <div><strong>Estado:</strong> ${s === 'sent' ? '✅ Enviado' : s === 'skip' ? '⏭ Omitido' : '⏳ Pendiente'}</div>
         <div><strong>Índice:</strong> ${currentIdx + 1} / ${TOTAL}</div>
-        <div><strong>Operador:</strong> ${operatorIdx + 1}</div>
+        <div><strong>Operador:</strong> ${operatorIdx === -1 ? 'Todos' : operatorIdx + 1}</div>
       </div>
     </div>
     <div class="message-panel">
@@ -1083,15 +1097,18 @@ function renderPanel() {
 function abrirWhatsApp() {
   if (currentIdx === null) return;
   const c = CONTACTS[currentIdx];
-  // Protocolo whatsapp:// abre directamente la app instalada en el PC
-  // El texto va en el parámetro text= igual que wa.me
   const url = 'whatsapp://send?phone=' + c.tel + '&text=' + encodeURIComponent(MESSAGE);
   window.location.href = url;
-  onSendClick();
-}
-
-function onSendClick() {
-  // noop — marcado manual por el usuario
+  // Auto-marcar como enviado al abrir WhatsApp
+  if (status[currentIdx] !== 'sent') {
+    status[currentIdx] = 'sent';
+    saveState();
+    updateStats();
+    showToast('✅ Enviado y marcado automáticamente', 'green');
+    renderList();
+    renderPanel();
+    setTimeout(() => navigate(1), 600);
+  }
 }
 
 function markSent() {
