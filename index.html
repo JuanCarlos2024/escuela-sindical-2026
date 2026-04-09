@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Envío — Escuela Sindical UV 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2128;
+    --border: #30363d;
+    --green: #25D366;
+    --green-dark: #128C7E;
+    --green-glow: rgba(37,211,102,0.15);
+    --sent: #1a3a2a;
+    --sent-border: #2ea864;
+    --skip: #2a1f1a;
+    --skip-border: #e67e22;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --red: #f85149;
+    --yellow: #d29922;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOP BAR ── */
+  .btn-wa-fixed {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    background: var(--green);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 8px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 0 14px rgba(37,211,102,0.35);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .btn-wa-fixed:hover {
+    background: #20bd5a;
+    box-shadow: 0 0 22px rgba(37,211,102,0.55);
+    transform: translateY(-1px);
+  }
+  .btn-wa-fixed.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    gap: 16px;
+  }
+
+  /* Action bar sticky right below topbar */
+  .action-bar-wrapper {
+    position: sticky;
+    top: 62px;
+    z-index: 99;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo {
+    width: 36px;
+    height: 36px;
+    background: var(--green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .topbar h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .topbar h1 span {
+    color: var(--green);
+  }
+
+  .topbar-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    max-width: 320px;
+  }
+
+  .progress-bar-outer {
+    flex: 1;
+    height: 8px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-bar-inner {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-dark), var(--green));
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .progress-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green);
+    white-space: nowrap;
+    min-width: 60px;
+    text-align: right;
+  }
+
+  /* ── STATS ── */
+  .stats {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .stat-pill {
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid;
+  }
+
+  .stat-pill.total  { border-color: var(--border); color: var(--text-muted); background: var(--surface2); }
+  .stat-pill.sent   { border-color: var(--sent-border); color: #2ea864; background: var(--sent); }
+  .stat-pill.skip   { border-color: var(--skip-border); color: #e67e22; background: var(--skip); }
+  .stat-pill.remain { border-color: var(--accent); color: var(--accent); background: rgba(88,166,255,0.1); }
+
+  /* ── OPERATOR BAR ── */
+  .operator-bar {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 28px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .op-label { color: var(--text-muted); }
+
+  .op-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 4px 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .op-range {
+    color: var(--accent);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    margin-left: 6px;
+  }
+
+  .filter-btns {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+  }
+
+  .filter-btn {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    transition: all 0.15s;
+  }
+
+  .filter-btn.active, .filter-btn:hover {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--accent);
+  }
+
+  .filter-btn.active-sent { border-color: var(--sent-border); color: #2ea864; background: var(--sent); }
+  .filter-btn.active-skip { border-color: var(--skip-border); color: #e67e22; background: var(--skip); }
+
+  /* ── SEARCH ── */
+  .search-bar {
+    padding: 10px 28px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 8px 14px 8px 36px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 12px center;
+  }
+
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text-muted); }
+
+  /* ── MAIN LAYOUT ── */
+  .main {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ── CONTACT LIST ── */
+  .contact-list {
+    width: 320px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    background: var(--bg);
+  }
+
+  .contact-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(48,54,61,0.5);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.1s;
+    position: relative;
+  }
+
+  .contact-item:hover { background: var(--surface2); }
+  .contact-item.active { background: var(--surface); border-left: 3px solid var(--green); }
+  .contact-item.sent-item {
+    background: #0d2b1a !important;
+    border-left: 4px solid #25D366 !important;
+    opacity: 1;
+  }
+  .contact-item.sent-item .contact-name { color: #25D366; text-decoration: line-through; }
+  .contact-item.sent-item .contact-tel  { color: #1a6e40; }
+  .contact-item.sent-item .contact-num  { color: #25D366; }
+
+  .contact-item.skip-item {
+    background: #2a1a08 !important;
+    border-left: 4px solid #e67e22 !important;
+    opacity: 1;
+  }
+  .contact-item.skip-item .contact-name { color: #e67e22; text-decoration: line-through; opacity: 0.75; }
+  .contact-item.skip-item .contact-tel  { color: #7a4010; }
+  .contact-item.skip-item .contact-num  { color: #e67e22; }
+
+  .contact-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--green-dark), var(--green));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    color: #fff;
+    flex-shrink: 0;
+    text-transform: uppercase;
+  }
+
+  .contact-info { flex: 1; min-width: 0; }
+
+  .contact-name {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text);
+  }
+
+  .contact-tel {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-family: monospace;
+  }
+
+  .contact-num {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  .status-dot.sent { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot.skip { background: var(--yellow); }
+
+  /* ── SEND PANEL ── */
+  .send-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .send-panel-inner {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px;
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+    min-height: 0;
+  }
+
+  /* Contact card */
+  .contact-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    width: 280px;
+    flex-shrink: 0;
+  }
+
+  .card-num {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .card-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--green-dark), var(--green));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 24px;
+    color: #fff;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  .card-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
+
+  .card-tel {
+    font-family: monospace;
+    font-size: 15px;
+    color: var(--green);
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .card-divider {
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 16px;
+  }
+
+  .card-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+
+  .card-meta strong { color: var(--text); }
+
+  /* Message panel */
+  .message-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .message-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .message-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+    white-space: pre-wrap;
+    max-height: 340px;
+    overflow-y: auto;
+    font-family: 'DM Sans', sans-serif;
+    position: relative;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-muted);
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+
+  /* ── ACTION BUTTONS ── */
+  .action-bar {
+    display: flex;
+    gap: 10px;
+    padding: 10px 20px;
+    background: var(--surface);
+    border-bottom: 2px solid var(--green-dark);
+    border-top: 1px solid var(--border);
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 98;
+    flex-shrink: 0;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    text-decoration: none;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-whatsapp {
+    background: var(--green);
+    color: #000;
+    font-size: 15px;
+    padding: 14px 28px;
+    box-shadow: 0 0 20px rgba(37,211,102,0.3);
+  }
+
+  .btn-whatsapp:hover {
+    background: #20bd5a;
+    box-shadow: 0 0 28px rgba(37,211,102,0.5);
+    transform: translateY(-1px);
+  }
+
+  .btn-sent {
+    background: var(--sent);
+    color: #2ea864;
+    border: 1px solid var(--sent-border);
+  }
+
+  .btn-sent:hover { background: #1f4a33; }
+
+  .btn-skip {
+    background: var(--skip);
+    color: #e67e22;
+    border: 1px solid var(--skip-border);
+  }
+
+  .btn-skip:hover { background: #3a2510; }
+
+  .btn-prev {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-prev:hover { color: var(--text); border-color: var(--text-muted); }
+
+  .btn-next {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .btn-next:hover { background: #79b8ff; }
+
+  .spacer { flex: 1; }
+
+  .keyboard-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 6px 28px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+
+  kbd {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: monospace;
+    font-size: 10px;
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    gap: 12px;
+    padding: 40px;
+    text-align: center;
+  }
+
+  .empty-icon { font-size: 48px; }
+  .empty-title { font-family: 'Syne', sans-serif; font-size: 18px; color: var(--text); }
+  .empty-sub { font-size: 14px; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 999;
+    pointer-events: none;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.green { border-color: var(--sent-border); color: #2ea864; }
+  .toast.orange { border-color: var(--skip-border); color: #e67e22; }
+
+  /* ── SENT BADGE ── */
+  .copy-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex: 1;
+    justify-content: center;
+  }
+  .copy-action-btn:hover {
+    background: var(--surface);
+    border-color: var(--text-muted);
+    transform: translateY(-1px);
+  }
+  .copy-action-btn.green {
+    border-color: var(--green-dark);
+    color: var(--green);
+    background: rgba(37,211,102,0.08);
+  }
+  .copy-action-btn.green:hover {
+    background: rgba(37,211,102,0.15);
+    border-color: var(--green);
+  }
+  .copy-action-btn.flash {
+    background: var(--sent);
+    border-color: var(--sent-border);
+    color: #2ea864;
+  }
+
+  .test-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(88,166,255,0.15);
+    border: 1px solid var(--accent);
+    border-radius: 99px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--accent);
+    margin-top: 8px;
+  }
+
+  .contact-item.test-item {
+    border-left: 4px solid var(--accent) !important;
+    background: rgba(88,166,255,0.06) !important;
+  }
+  .contact-item.test-item .contact-name { color: var(--accent); }
+
+  .sent-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--sent);
+    border: 1px solid var(--sent-border);
+    border-radius: 99px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: #2ea864;
+    margin-top: 8px;
+  }
+
+  /* ── NO SELECTION ── */
+  .no-selection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    gap: 16px;
+  }
+
+  .no-selection-icon { font-size: 56px; opacity: 0.3; }
+  .no-selection-title { font-family: 'Syne', sans-serif; font-size: 20px; color: var(--text); opacity: 0.5; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  .done-overlay {
+    position: fixed; inset: 0;
+    background: rgba(13,17,23,0.95);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 20px; z-index: 999;
+    display: none;
+  }
+
+  .done-overlay.show { display: flex; }
+  .done-emoji { font-size: 72px; }
+  .done-title { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; color: var(--green); }
+  .done-sub { font-size: 16px; color: var(--text-muted); }
+
+  /* mobile warning */
+  @media (max-width: 700px) {
+    .contact-list { display: none; }
+    .send-panel-inner { flex-direction: column; }
+    .contact-card { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo">✊</div>
+    <div>
+      <h1>Panel de Envío — <span>Escuela Sindical UV 2026</span></h1>
+      <div class="topbar-sub">App WhatsApp • Envío asistido individual</div>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progressBar"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">0 / 461</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-pill total">📋 <span id="statTotal">461</span> total</div>
+    <div class="stat-pill sent">✅ <span id="statSent">0</span> enviados</div>
+    <div class="stat-pill skip">⏭ <span id="statSkip">0</span> omitidos</div>
+    <div class="stat-pill remain">⏳ <span id="statRemain">461</span> pendientes</div>
+  </div>
+</div>
+
+<!-- BARRA DE ACCIONES FIJA (segundo encabezado siempre visible) -->
+<div style="position:sticky;top:62px;z-index:99;">
+<div class="action-bar" id="actionBar">
+  <button class="btn btn-prev" onclick="navigate(-1)">← Anterior</button>
+  <button class="btn btn-skip" onclick="markSkip()">⏭ Omitir</button>
+  <button class="btn btn-whatsapp" id="waBtn" onclick="abrirWhatsApp()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    Abrir en App WhatsApp
+  </button>
+  <button class="btn btn-sent" id="sentBtn" onclick="markSent()">✅ Marcar enviado</button>
+  <div class="spacer"></div>
+  <div style="font-size:11px;color:var(--text-muted);line-height:1.8">
+    <kbd style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:10px">←→</kbd> Nav &nbsp;
+    <kbd style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:10px">Enter</kbd> App WA &nbsp;
+    <kbd style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:10px">S</kbd> Enviado &nbsp;
+    <kbd style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:10px">O</kbd> Omitir
+  </div>
+  <button class="btn btn-next" onclick="navigate(1)">Siguiente →</button>
+</div>
+</div>
+
+<!-- OPERATOR BAR -->
+<div class="operator-bar">
+  <span class="op-label">👤 Operador:</span>
+  <select class="op-select" id="operatorSelect" onchange="applyOperatorRange()">
+    <option value="0">Operador 1</option>
+    <option value="1">Operador 2</option>
+    <option value="2">Operador 3</option>
+    <option value="3">Operador 4</option>
+    <option value="4">Operador 5</option>
+  </select>
+  <span class="op-range" id="opRange"></span>
+
+  <div class="filter-btns">
+    <button class="filter-btn active" onclick="setFilter('all', this)">Todos</button>
+    <button class="filter-btn" onclick="setFilter('pending', this)">Pendientes</button>
+    <button class="filter-btn" onclick="setFilter('sent', this)">Enviados</button>
+    <button class="filter-btn" onclick="setFilter('skip', this)">Omitidos</button>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-bar">
+  <input class="search-input" type="text" id="searchInput" placeholder="Buscar por nombre o número..." oninput="renderList()">
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- LISTA -->
+  <div class="contact-list" id="contactList"></div>
+
+  <!-- PANEL DERECHO -->
+  <div class="send-panel">
+    <div class="send-panel-inner" id="sendPanel">
+      <div class="no-selection">
+        <div class="no-selection-icon">👈</div>
+        <div class="no-selection-title">Selecciona un contacto</div>
+        <div style="font-size:13px;color:var(--text-muted)">o usa los botones de navegación arriba</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- DONE OVERLAY -->
+<div class="done-overlay" id="doneOverlay">
+  <div class="done-emoji">🎉</div>
+  <div class="done-title">¡Campaña completada!</div>
+  <div class="done-sub" id="doneSub"></div>
+  <button class="btn btn-whatsapp" onclick="document.getElementById('doneOverlay').classList.remove('show')">Ver resumen</button>
+</div>
+
+<script>
+// ── DATOS ─────────────────────────────────────────────────────────────────────
+const CONTACTS = [{"nombre": "Arelis Valenzuela Vergara", "tel": "56935093484"}, {"nombre": "Arturo. Eduardo. Romero. Garcia.", "tel": "56982828030"}, {"nombre": "Adelina Cotal", "tel": "56975751656"}, {"nombre": "Aeljandro Rubilar", "tel": "56985326330"}, {"nombre": "Alejandra González", "tel": "56993370233"}, {"nombre": "Alejandra Rodríguez", "tel": "56996450228"}, {"nombre": "Alejandra Cespedes", "tel": "56931015183"}, {"nombre": "Alejandro Osorio Donaire", "tel": "56995931020"}, {"nombre": "Alex Caris", "tel": "56982004239"}, {"nombre": "Alexander Wolfgang Ochsenius Geis", "tel": "56955245901"}, {"nombre": "Alexis Barrios", "tel": "56987070433"}, {"nombre": "Alfonso Núñez", "tel": "56989587581"}, {"nombre": "Alicia Pozzi Serrano", "tel": "56979136425"}, {"nombre": "Alonso Fernández", "tel": "56941442532"}, {"nombre": "Ana", "tel": "56983020224"}, {"nombre": "Ana Correa", "tel": "56984464823"}, {"nombre": "Ana Figueroa", "tel": "56988382052"}, {"nombre": "Ana Jopia", "tel": "56998215954"}, {"nombre": "Ana Katherine Campos Arias", "tel": "56967426321"}, {"nombre": "Andrea Abarca Muñoz", "tel": "56944424190"}, {"nombre": "Andrea Brito", "tel": "56942513084"}, {"nombre": "Andrea Farias Mateluna", "tel": "56991004444"}, {"nombre": "Antonio Manríquez", "tel": "56967086375"}, {"nombre": "Antonio Venegas", "tel": "56993974887"}, {"nombre": "Aníbal Pérez", "tel": "56967266083"}, {"nombre": "Araceli Perez Aranzaez", "tel": "56942319113"}, {"nombre": "Ariel Durán Leyton", "tel": "56940253529"}, {"nombre": "Ayelen Carrasco", "tel": "56920287098"}, {"nombre": "Beatriz Garrido Jara", "tel": "56963439049"}, {"nombre": "Bastián Gaymee", "tel": "56965733763"}, {"nombre": "Beatriz", "tel": "56962174357"}, {"nombre": "Belén Estay Orellana", "tel": "56975654166"}, {"nombre": "Berta Delicia Soto Vergara", "tel": "56974500268"}, {"nombre": "Betzabe Cueto Galdames", "tel": "56984920307"}, {"nombre": "Braulio Astorga", "tel": "56978497745"}, {"nombre": "Briam Stuart", "tel": "56975466412"}, {"nombre": "Carla Oliva Venegas", "tel": "56979460063"}, {"nombre": "Camila Ruz", "tel": "56992009709"}, {"nombre": "Camila Soto Palma", "tel": "56961194022"}, {"nombre": "Camilo Verdugo Capetillo", "tel": "56979876597"}, {"nombre": "Carla", "tel": "56942445958"}, {"nombre": "Carla Reyes Leporati", "tel": "56977761632"}, {"nombre": "Carlos Alday", "tel": "56978491587"}, {"nombre": "Carlos Bravo", "tel": "56984097289"}, {"nombre": "Carlos Cáceres", "tel": "56984217945"}, {"nombre": "Carlos Díaz", "tel": "56992300899"}, {"nombre": "Carlos Eduardo Ruiz Sáez", "tel": "56950111104"}, {"nombre": "Carlos Flores", "tel": "56992795056"}, {"nombre": "Carlos Pizarro", "tel": "56986391026"}, {"nombre": "Carlos Sánchez Muñoz", "tel": "56952034447"}, {"nombre": "Carmen Santa María", "tel": "56995011434"}, {"nombre": "Carol Alvarez", "tel": "56930747857"}, {"nombre": "Carol Loyola Araya", "tel": "56974207215"}, {"nombre": "Carolina", "tel": "56983802913"}, {"nombre": "Carolina Andrea Rojas Yuz", "tel": "56984421202"}, {"nombre": "Carolina Canales Espinoza", "tel": "56941356775"}, {"nombre": "Carolina Carvajal", "tel": "56987140377"}, {"nombre": "Carolina Chandia Vasquez", "tel": "56977758107"}, {"nombre": "Carolina Espíndola", "tel": "56993596848"}, {"nombre": "Carolina Figueroa", "tel": "56986293567"}, {"nombre": "Carolina Opazo", "tel": "56975491235"}, {"nombre": "Carolina Gonzalez", "tel": "56989720931"}, {"nombre": "Catalina", "tel": "56961718247"}, {"nombre": "Catherina", "tel": "56950156659"}, {"nombre": "Cecilia Bravo", "tel": "56985259641"}, {"nombre": "Cecilia Elgueta", "tel": "56979896182"}, {"nombre": "Cecilia González Lizama", "tel": "56945076202"}, {"nombre": "Cecilia Valenzuela Lopez", "tel": "56952252269"}, {"nombre": "Christian Peña", "tel": "56993214426"}, {"nombre": "Claudia Carrasco Moreira", "tel": "56987050583"}, {"nombre": "Claudia Castro Suárez", "tel": "56934288326"}, {"nombre": "Claudia Espinoza Ávila", "tel": "56933857232"}, {"nombre": "Claudia Figueroa", "tel": "56998409341"}, {"nombre": "Claudia Jacqueline Morales Pulgar", "tel": "56997144446"}, {"nombre": "Claudio Durán", "tel": "56984445947"}, {"nombre": "Constanza Macchiavello", "tel": "56963708031"}, {"nombre": "Constanza Muñoz Reyes", "tel": "56987437799"}, {"nombre": "Constanza Valenzuela", "tel": "56995423719"}, {"nombre": "Consuelo", "tel": "56976001493"}, {"nombre": "Cristian Pérez", "tel": "56987344253"}, {"nombre": "Cristian Rojas", "tel": "56968434080"}, {"nombre": "Cristina Carvallo", "tel": "56983772593"}, {"nombre": "Cristián Pino", "tel": "56997625186"}, {"nombre": "Cristopher Alvear", "tel": "56978738975"}, {"nombre": "Diego Renato Sebik Santoro", "tel": "56984611758"}, {"nombre": "Damaris", "tel": "56999567838"}, {"nombre": "Daniel Ariz", "tel": "56995495212"}, {"nombre": "Daniel Calderón", "tel": "56992102519"}, {"nombre": "Daniel Márquez", "tel": "56983374627"}, {"nombre": "Daniel Veloso", "tel": "56993670988"}, {"nombre": "Daniela Castro Yáñez", "tel": "56977292724"}, {"nombre": "Daniela Ignacia Castro Guarda", "tel": "56988392739"}, {"nombre": "Daniela Mujica Morales", "tel": "56983814760"}, {"nombre": "Daniela Muñoz Ávila", "tel": "56971510227"}, {"nombre": "Daniela Orielle Rojas Calderón", "tel": "56994906776"}, {"nombre": "Danilo Andres Cisternas Gonzalez", "tel": "56984436374"}, {"nombre": "David Alvarez Palacios", "tel": "56969093739"}, {"nombre": "David Contreras Arriaza", "tel": "56996790007"}, {"nombre": "David Lopez Valencia", "tel": "56982944984"}, {"nombre": "David Rojas", "tel": "56997141606"}, {"nombre": "Denisse Gonzalez", "tel": "56976166507"}, {"nombre": "Denisse Zamora", "tel": "56991281337"}, {"nombre": "Diego Ignacio Valerio Ávalos", "tel": "56965917953"}, {"nombre": "Dinka Danesa Briones Gonzalez", "tel": "56956317144"}, {"nombre": "Domingo Figueroa", "tel": "56983536998"}, {"nombre": "Erik Rodrigo Villarreal Gonzalez", "tel": "56965700718"}, {"nombre": "Edgar Alexis Pacheco", "tel": "56930670758"}, {"nombre": "Edison Barrera", "tel": "56988212348"}, {"nombre": "Edmundo Casanova", "tel": "56995364195"}, {"nombre": "Eduardo Muñoz", "tel": "56989149661"}, {"nombre": "Elias Maximiliano Peñailillo Carrasco", "tel": "56967248082"}, {"nombre": "Elisa Brevis", "tel": "56957738810"}, {"nombre": "Elizabeth", "tel": "56932536823"}, {"nombre": "Elizabeth Arancibia Rodríguez", "tel": "56991993722"}, {"nombre": "Elizabeth Nelson Calderón", "tel": "56954191404"}, {"nombre": "Elizabeth Patricia Letelier Maldonado", "tel": "56989350016"}, {"nombre": "Elizabeth Rios", "tel": "56934117368"}, {"nombre": "Elizabeth Rios Cortes", "tel": "56990321878"}, {"nombre": "Elvira  Grado Le- Bert", "tel": "56954113507"}, {"nombre": "Elvira Martel Molina", "tel": "56978293002"}, {"nombre": "Ema Nuñez Muñoz", "tel": "56994585044"}, {"nombre": "Enrique Osorio", "tel": "56999886081"}, {"nombre": "Enrique Villalon", "tel": "56984495952"}, {"nombre": "Enzo", "tel": "56997949374"}, {"nombre": "Ergard Córdova", "tel": "56987289316"}, {"nombre": "Erik Bustos", "tel": "56993194779"}, {"nombre": "Erik Mattisen", "tel": "56989130436"}, {"nombre": "Evelyn Villarroel", "tel": "56981203871"}, {"nombre": "Excequiel Cortés", "tel": "56981604748"}, {"nombre": "Exequiel Arredondo", "tel": "56997451141"}, {"nombre": "Fabiola", "tel": "56979892267"}, {"nombre": "Fabiola Carvajal", "tel": "56977196667"}, {"nombre": "Fabiola Gómez", "tel": "56993970465"}, {"nombre": "Felipe Antonio Williamson Sepúlveda", "tel": "56994597453"}, {"nombre": "Felipe Riveros Fleming", "tel": "56944749084"}, {"nombre": "Fernanda Maldonado", "tel": "56985213398"}, {"nombre": "Fernando Christiansen", "tel": "56997553290"}, {"nombre": "Fernando González", "tel": "56985004670"}, {"nombre": "Francisca Sierra Vega", "tel": "56940701270"}, {"nombre": "Francisca Yunes Maturana", "tel": "56962562150"}, {"nombre": "Francisco", "tel": "56961212032"}, {"nombre": "Francisco Fuentes", "tel": "56987084661"}, {"nombre": "Francisco Muñoz", "tel": "56989258240"}, {"nombre": "Francisco Reyes", "tel": "56982128309"}, {"nombre": "Francisco Toledo", "tel": "56995225686"}, {"nombre": "Gabriel  Quinteros  Ibaceta", "tel": "56989103099"}, {"nombre": "Gabriel Saldías", "tel": "56983007088"}, {"nombre": "Gabriela Henríquez Leiva", "tel": "56971542502"}, {"nombre": "Gabriela Santibañez", "tel": "56994591795"}, {"nombre": "Galvarino Henríquez", "tel": "56987869661"}, {"nombre": "Gastón Villalobos", "tel": "56987713755"}, {"nombre": "Georgina Berrios", "tel": "56985614956"}, {"nombre": "Gino Tramontina", "tel": "56959715222"}, {"nombre": "Gladys Jorquera", "tel": "56976570844"}, {"nombre": "Gladys Prieto", "tel": "56996738128"}, {"nombre": "Gloria", "tel": "56975519647"}, {"nombre": "Gloria Salas", "tel": "56987240474"}, {"nombre": "Gonzalo Calisto", "tel": "56975741925"}, {"nombre": "Guillermo Correa", "tel": "56968363047"}, {"nombre": "Guillermo Johnson", "tel": "56994412914"}, {"nombre": "Guillermo Lazcano", "tel": "56966793345"}, {"nombre": "Gustavo Espinosa Aldunate", "tel": "56933058504"}, {"nombre": "Gyssel", "tel": "56999148740"}, {"nombre": "Helmuth Toledo Wilson", "tel": "56951491422"}, {"nombre": "Heriberto Lobos", "tel": "56992373635"}, {"nombre": "Herminia Del Carmen Pastén Valdés", "tel": "56984401402"}, {"nombre": "Hernán Murua", "tel": "56992438126"}, {"nombre": "Hernán Ortega", "tel": "56997770801"}, {"nombre": "Hernán Spanguell", "tel": "56996134325"}, {"nombre": "Hertia Saavedra", "tel": "56981319814"}, {"nombre": "Hertia Saavedra Zuber", "tel": "56928158094"}, {"nombre": "Hugo Ahumada", "tel": "56985319587"}, {"nombre": "Hugo Osorio", "tel": "56984905341"}, {"nombre": "Héctor Chávez", "tel": "56978829388"}, {"nombre": "Héctor Orellana", "tel": "56991063505"}, {"nombre": "Héctor Velásquez", "tel": "56997867729"}, {"nombre": "Ignacio Venegas", "tel": "56994084925"}, {"nombre": "Ignacio Leonardo Rojas Rojas", "tel": "56982603557"}, {"nombre": "Ingrid Torres", "tel": "56984406778"}, {"nombre": "Isaac Villavicencio Llamosas", "tel": "56988422287"}, {"nombre": "Isidora", "tel": "56942368576"}, {"nombre": "Italo Roagna", "tel": "56993550933"}, {"nombre": "Ivan", "tel": "56962087110"}, {"nombre": "Iván Cofré Morales", "tel": "56989091058"}, {"nombre": "Jacqueline Ordóñez", "tel": "56936327252"}, {"nombre": "Jacqueline Verdejo Fredes", "tel": "56999793336"}, {"nombre": "Jaime Farías", "tel": "56995705789"}, {"nombre": "Jaime García Pacheco", "tel": "56987298040"}, {"nombre": "Jaime Lobos", "tel": "56996008045"}, {"nombre": "Jaime Varaya", "tel": "56988888843"}, {"nombre": "Janet Basualto", "tel": "56955253635"}, {"nombre": "Jean", "tel": "56995590207"}, {"nombre": "Jeannette Frías", "tel": "56996167003"}, {"nombre": "Jenaro Ulloa", "tel": "56999798072"}, {"nombre": "Jennifer Karin Maldonado Avalos", "tel": "56945286952"}, {"nombre": "Jenny Antinao", "tel": "56997121553"}, {"nombre": "Joaquín Muñoz Fuentes", "tel": "56963073301"}, {"nombre": "Johanna Montino Bahamondes", "tel": "56993194256"}, {"nombre": "John Alexander Sacchi Sagredo", "tel": "56971832039"}, {"nombre": "Jonathan Gabriel  Suárez Bustamante", "tel": "56963106750"}, {"nombre": "Jorge", "tel": "56988800800"}, {"nombre": "Jorge Nuñez Gomez", "tel": "56956362102"}, {"nombre": "Jorge Olivares", "tel": "56992288910"}, {"nombre": "Jorge Villagran", "tel": "56992499670"}, {"nombre": "Jorge Zambrano", "tel": "56988800328"}, {"nombre": "Jorge Castro", "tel": "56953805994"}, {"nombre": "Jorge Julio Arredondo Fernández", "tel": "56973386993"}, {"nombre": "Jose Nuñez", "tel": "56983543075"}, {"nombre": "Jose Iturrieta", "tel": "56979303390"}, {"nombre": "Jose Luis", "tel": "56944567586"}, {"nombre": "Josemigueltapiamora", "tel": "56982978987"}, {"nombre": "José Gallardo", "tel": "56999008686"}, {"nombre": "José Germán Rojas Ruz", "tel": "56947046334"}, {"nombre": "José Rodriguez", "tel": "56973707444"}, {"nombre": "José Torres", "tel": "56998842802"}, {"nombre": "José Ureta", "tel": "56993363693"}, {"nombre": "José Valdovinos", "tel": "56997837056"}, {"nombre": "Juan Carneiro", "tel": "56973061918"}, {"nombre": "Juan Contreras", "tel": "56982482092"}, {"nombre": "Juan Enrique Sumonte Bernales", "tel": "56983624240"}, {"nombre": "Juan López", "tel": "56996627651"}, {"nombre": "Juan Pablo Salazar", "tel": "56937266374"}, {"nombre": "Juan Pacheco", "tel": "56981854210"}, {"nombre": "Juan Rivera", "tel": "56968166890"}, {"nombre": "Juan Sepúlveda", "tel": "56974318964"}, {"nombre": "Juan Soto", "tel": "56974212100"}, {"nombre": "Juan Torres", "tel": "56995956409"}, {"nombre": "Juanbernal", "tel": "56990013570"}, {"nombre": "Judith Alfaro", "tel": "56953919069"}, {"nombre": "Judith Fernández", "tel": "56968984864"}, {"nombre": "Julio Ponce", "tel": "56968163781"}, {"nombre": "Kare8", "tel": "56978242117"}, {"nombre": "Karen Aros Cornejo", "tel": "56962516556"}, {"nombre": "Karen Stephan", "tel": "56990681129"}, {"nombre": "Karina Garrido", "tel": "56988964672"}, {"nombre": "Karla", "tel": "56977090639"}, {"nombre": "Katherine Mardones", "tel": "56951003944"}, {"nombre": "Laura Videla Miranda", "tel": "56966411981"}, {"nombre": "Leonardo Aqueveque", "tel": "56982566898"}, {"nombre": "Leonel Pérez", "tel": "56982598602"}, {"nombre": "Leslie Leal Carrasco", "tel": "56998981472"}, {"nombre": "Leslie Muñoz Retamales", "tel": "56976445266"}, {"nombre": "Lilian Ponce", "tel": "56984866586"}, {"nombre": "Lirayen", "tel": "56994804048"}, {"nombre": "Lirayen Portilla", "tel": "56994805058"}, {"nombre": "Lorena Aspe", "tel": "56988072467"}, {"nombre": "Luciano Huerta", "tel": "56978875191"}, {"nombre": "Luis Barria", "tel": "56997704910"}, {"nombre": "Luis Escobar", "tel": "56990508382"}, {"nombre": "Luis Gajardo", "tel": "56989057572"}, {"nombre": "Luis González", "tel": "56992560004"}, {"nombre": "Luis Guerrero", "tel": "56963535994"}, {"nombre": "Luis Jara", "tel": "56985956657"}, {"nombre": "Luis Massoglia", "tel": "56995514981"}, {"nombre": "Luis Pinto", "tel": "56999729983"}, {"nombre": "Luis Ramírez", "tel": "56983735728"}, {"nombre": "Luis Terrazas", "tel": "56989178923"}, {"nombre": "Luis Valeria", "tel": "56999347373"}, {"nombre": "Luis Zumarán", "tel": "56992329076"}, {"nombre": "Melisa Beltrán Tapia", "tel": "56945217785"}, {"nombre": "Macarena Vauclin", "tel": "56988028929"}, {"nombre": "Maite Barrera Palacios", "tel": "56988627250"}, {"nombre": "Malvina Monsalve", "tel": "56994382555"}, {"nombre": "Manuel Alejandro Araya Alvarez", "tel": "56976245484"}, {"nombre": "Manuel Ayala Pasten", "tel": "56979691372"}, {"nombre": "Manuel Espinoza", "tel": "56986189546"}, {"nombre": "Manuel Muñoz", "tel": "56988688351"}, {"nombre": "Manuel Ramírez", "tel": "56981054085"}, {"nombre": "Marcela Isabel Pérez Araya", "tel": "56997790711"}, {"nombre": "Marcela Jil Álvarez", "tel": "56979813426"}, {"nombre": "Marcela Nieto Rivera", "tel": "56950146185"}, {"nombre": "Marcela Serey", "tel": "56987935517"}, {"nombre": "Marcelo", "tel": "56937078195"}, {"nombre": "Marcelo Rojas", "tel": "56993359391"}, {"nombre": "Marcia Torreblanca C.", "tel": "56998704225"}, {"nombre": "Marco Alfaro", "tel": "56985007242"}, {"nombre": "Marco Arenas Marín", "tel": "56968485064"}, {"nombre": "Marco Canales", "tel": "56988764883"}, {"nombre": "Marco Delgado", "tel": "56996409566"}, {"nombre": "Marco Vergara", "tel": "56974425985"}, {"nombre": "Mareth", "tel": "56946384183"}, {"nombre": "Marggorie Zumaran", "tel": "56991346434"}, {"nombre": "Maria", "tel": "56983621704"}, {"nombre": "Mariana Lazo González", "tel": "56941403076"}, {"nombre": "Marianne Olivares Pulgar", "tel": "56993257182"}, {"nombre": "Mariela Riquelme", "tel": "56963745498"}, {"nombre": "Mariela Vivíana Cuello Baez", "tel": "56989035027"}, {"nombre": "Mario Benítez", "tel": "56982743675"}, {"nombre": "Mario González Bernal", "tel": "56978720175"}, {"nombre": "Mario Pérez", "tel": "56989212548"}, {"nombre": "Mario Valencia", "tel": "56992377397"}, {"nombre": "Marisol Craig Galeazzi", "tel": "56974777332"}, {"nombre": "Maritza Benítez Arribaz", "tel": "56977926893"}, {"nombre": "Maritza Huerta", "tel": "56974799342"}, {"nombre": "Maritza Muñoz", "tel": "56988355787"}, {"nombre": "Marlene Leyton Arellano", "tel": "56985610085"}, {"nombre": "Marta Cataldo Sandoval", "tel": "56930141279"}, {"nombre": "María Alfaro", "tel": "56966243950"}, {"nombre": "María Beatriz Saldivia", "tel": "56976830830"}, {"nombre": "María Belén González Quijada", "tel": "56933685555"}, {"nombre": "María Cornejo", "tel": "56977371899"}, {"nombre": "María Ester Oyanedel Núñez", "tel": "56992986883"}, {"nombre": "María José Retamal Jiménez", "tel": "56941608141"}, {"nombre": "María José Vásquez Moya", "tel": "56995523138"}, {"nombre": "María Leonor De La Fuente", "tel": "56974542795"}, {"nombre": "María León", "tel": "56968402969"}, {"nombre": "María Lobos", "tel": "56954012257"}, {"nombre": "María De Los Ángeles", "tel": "56964044116"}, {"nombre": "María Paz", "tel": "56984247887"}, {"nombre": "Maximiliano Alberto", "tel": "56973914548"}, {"nombre": "Miguel", "tel": "56949975051"}, {"nombre": "Miguel Arraztio", "tel": "56940418675"}, {"nombre": "Miguel Carvajal Zamorano", "tel": "56985180501"}, {"nombre": "Miguel Escobar", "tel": "56994665055"}, {"nombre": "Miguel Manzur", "tel": "56982276491"}, {"nombre": "Miguel Reyes", "tel": "56990747232"}, {"nombre": "Miguel Rodriguez Navarro", "tel": "56995473332"}, {"nombre": "Miguel Rojas", "tel": "56988764678"}, {"nombre": "Mijaly Mora / Walter Arteaga / Eder Sandoval", "tel": "56950845827"}, {"nombre": "Millaray Castro", "tel": "56962882508"}, {"nombre": "Miriam Seguel", "tel": "56986239951"}, {"nombre": "Moisés Muñoz", "tel": "56995924823"}, {"nombre": "Moisés Tapia Galleguillos", "tel": "56984967690"}, {"nombre": "Monserrat Vidal", "tel": "56954296389"}, {"nombre": "Myrna Espinoza", "tel": "56988200824"}, {"nombre": "Naime Manzur Hidalgo", "tel": "56995596923"}, {"nombre": "Natalia", "tel": "56957420650"}, {"nombre": "Natalia Olivares Pivet", "tel": "56982936536"}, {"nombre": "Natalia Olmedo Nova", "tel": "56978778433"}, {"nombre": "Nelson Farias", "tel": "56967770940"}, {"nombre": "Nelson Lemus Astudillo", "tel": "56967576579"}, {"nombre": "Nicole", "tel": "56959057363"}, {"nombre": "Nicolás Alvarado", "tel": "56931251805"}, {"nombre": "Nolberto Díaz", "tel": "56981374037"}, {"nombre": "Norma Galleguillos", "tel": "56987465135"}, {"nombre": "Nuri Hernández", "tel": "56997314621"}, {"nombre": "Orfelina Guerrero", "tel": "56982882077"}, {"nombre": "Oscar Guerra", "tel": "56989674437"}, {"nombre": "Oscar Mera Bernal", "tel": "56982824591"}, {"nombre": "Pablo", "tel": "56935667886"}, {"nombre": "Pablo Barrientos", "tel": "56977787760"}, {"nombre": "Pamela Ahumada", "tel": "56958928890"}, {"nombre": "Pamela Cortez Caamaño", "tel": "56995897753"}, {"nombre": "Pamela Hernaiz", "tel": "56935345108"}, {"nombre": "Paola Faundez Novoa", "tel": "56953372156"}, {"nombre": "Paola Rojas Abarca", "tel": "56977953291"}, {"nombre": "Patricia", "tel": "56934026464"}, {"nombre": "Patricia Gonzalez Sidorova", "tel": "56988339478"}, {"nombre": "Patricia Saravia", "tel": "56981786333"}, {"nombre": "Patricio Aravena", "tel": "56988827426"}, {"nombre": "Patricio Cabrera", "tel": "56963048724"}, {"nombre": "Paula Jiménez", "tel": "56981643380"}, {"nombre": "Paula Julio Espejo", "tel": "56965209874"}, {"nombre": "Paula Valeria López Quezada", "tel": "56981212309"}, {"nombre": "Paula Villalobos", "tel": "56997528378"}, {"nombre": "Paulina Moena", "tel": "56976007123"}, {"nombre": "Paulina Paz Aguilera Mancilla", "tel": "56965477729"}, {"nombre": "Paulina Salinas Valdes", "tel": "56963541050"}, {"nombre": "Paz", "tel": "56946584912"}, {"nombre": "Pedro", "tel": "56961498830"}, {"nombre": "Pedro Berrios", "tel": "56975880222"}, {"nombre": "Pia Romero Covarrubias", "tel": "56988177434"}, {"nombre": "Pía Bonitto", "tel": "56995749918"}, {"nombre": "Rafael Araya", "tel": "56976942881"}, {"nombre": "Rafael Guzmán", "tel": "56995417407"}, {"nombre": "Ramón Toledo", "tel": "56977107860"}, {"nombre": "Raul Donoso", "tel": "56966199518"}, {"nombre": "Raúl Andrés Tapia Molina", "tel": "56999454647"}, {"nombre": "Raúl Araya", "tel": "56990141496"}, {"nombre": "Raúl Quintana", "tel": "56999786483"}, {"nombre": "Raúl Torres Farias", "tel": "56991884961"}, {"nombre": "Reinaldo Mac-Lean Vargas", "tel": "56990235560"}, {"nombre": "René Araya", "tel": "56993282160"}, {"nombre": "René Cumplido Cáceres", "tel": "56920157243"}, {"nombre": "Ricardo Guerrero Urquieta", "tel": "56973775601"}, {"nombre": "Ricardo Paez", "tel": "56989707099"}, {"nombre": "Ricardo Quezada", "tel": "56994021825"}, {"nombre": "Ricardo Romero", "tel": "56982478930"}, {"nombre": "Richard Soto", "tel": "56998294685"}, {"nombre": "Rigoberto Loyola", "tel": "56999585171"}, {"nombre": "Rigoberto Trejo", "tel": "56994306097"}, {"nombre": "Rita Gonzalez Schiappacasse", "tel": "56992504740"}, {"nombre": "Robert Torres", "tel": "56995574713"}, {"nombre": "Roberto Leiva", "tel": "56986369307"}, {"nombre": "Roberto Vega", "tel": "56997970340"}, {"nombre": "Rodrigo González Vera", "tel": "56987202548"}, {"nombre": "Rodrigo Macchiavello", "tel": "56963570726"}, {"nombre": "Rodrigo Selles Ferrés", "tel": "56944048356"}, {"nombre": "Rodrigo Sánchez", "tel": "56982030841"}, {"nombre": "Rodrigo Torres Cisternas", "tel": "56987968875"}, {"nombre": "Rogelio Farias Garrido", "tel": "56942136319"}, {"nombre": "Rolando Figueroa", "tel": "56988093508"}, {"nombre": "Rolando Vergara", "tel": "56997426177"}, {"nombre": "Rosa Salas", "tel": "56996404998"}, {"nombre": "Rossana Mena Muñoz", "tel": "56986764695"}, {"nombre": "Sindicato De Empresa Carozzi S.A. Nº 1", "tel": "56999680464"}, {"nombre": "Sindicato De Empresa Colegio Fundadores De Quilpue", "tel": "56995400632"}, {"nombre": "Sindicato De Empresa Colegio King Edwards School", "tel": "56952631984"}, {"nombre": "Sindicato De Empresa Corporacion Nacional Forestal, Establecimiento V Region Nº 1.", "tel": "56995495215"}, {"nombre": "Sindicato De Empresa Cosemar S.A. Establecimiento Enap Aconcagua, Concon", "tel": "56982754758"}, {"nombre": "Sindicato De Empresa Del Instituto De Seguridad Del Trabajo De Profesionales", "tel": "56984220065"}, {"nombre": "Sindicato De Empresa Fortificaciones Y Servicios De Mineria Jaime Raul Contreras Valencia E.I.R.L.", "tel": "56991684695"}, {"nombre": "Sindicato De Empresa Geovita S. A., Faena Cabildo", "tel": "56992286848"}, {"nombre": "Sindicato De Empresa Grafica Araus", "tel": "56989545119"}, {"nombre": "Sindicato De Empresa Inversiones Agromins S. A.", "tel": "56985580385"}, {"nombre": "Sindicato De Empresa Nº 1 De La Compañia Minera Cerro Negro S.A.", "tel": "56985215227"}, {"nombre": "Sindicato De Empresa Nº 2 Seafood Resources Chile S. A.", "tel": "56991043810"}, {"nombre": "Sindicato De Empresa Sanchez Y Cia Ltda", "tel": "56987732131"}, {"nombre": "Sindicato De Trabajadores De Empresa Gs Outsourcing", "tel": "56997717060"}, {"nombre": "Sindicato De Trabajadores De Empresa Panamericana Hoteles S.A.", "tel": "56989568837"}, {"nombre": "Sindicato De Trabajadores De La Empresa De Servicios Pucalan Norte Ltda.", "tel": "56997619454"}, {"nombre": "Sindicato De Trabajadores De La Empresa Sopraval S.A. \"Establecimiento De Engorda Y Pre-Engorda De La Zona Central Provincia De Quillota\"", "tel": "56992119890"}, {"nombre": "Sindicato De Trabajadores Nº 1 De Empresa Molinera Cabildo S.A.", "tel": "56987990977"}, {"nombre": "Sindicato De Trabajadores Nº 2 De La Empresa Nacional De Mineria", "tel": "56993593799"}, {"nombre": "Sindicato De Turnos Enap Refineria S.A.", "tel": "56965971652"}, {"nombre": "Sindicato Nº 1 De Empresa De La Corporacion Iglesia Presbiterana Reforma Misionera", "tel": "56984079179"}, {"nombre": "Sandra Ssnguineti Fava", "tel": "56951126346"}, {"nombre": "Scarlette Olguin Castro", "tel": "56966430068"}, {"nombre": "Sebastián Astudillo Herrera", "tel": "56979781085"}, {"nombre": "Sebastián Carlos Cáceres Peña", "tel": "56975244737"}, {"nombre": "Sebastián Ignacio", "tel": "56921603948"}, {"nombre": "Segundo Contreras", "tel": "56999295921"}, {"nombre": "Sergio Arancibia", "tel": "56974427342"}, {"nombre": "Sergio Jelvez", "tel": "56987677953"}, {"nombre": "Sergio Lucero", "tel": "56984039098"}, {"nombre": "Sergio Morales", "tel": "56982881226"}, {"nombre": "Silvana Valezka Zamora Bastías", "tel": "56936489123"}, {"nombre": "Siomara Salvo", "tel": "56993452652"}, {"nombre": "Sofía Cabrera Briceño", "tel": "56992181660"}, {"nombre": "Soledad Cavieres", "tel": "56985877960"}, {"nombre": "Soledad Romero", "tel": "56973068098"}, {"nombre": "Stacey Fernandoy", "tel": "56935280781"}, {"nombre": "Stefanía Yianatos", "tel": "56993691804"}, {"nombre": "Tamin Lues", "tel": "56997790703"}, {"nombre": "Tania Aranda", "tel": "56988284741"}, {"nombre": "Thiare", "tel": "56987116374"}, {"nombre": "Tomás Colarte", "tel": "56993427911"}, {"nombre": "Valentina Santana", "tel": "56958340259"}, {"nombre": "Valentín Peñaloza", "tel": "56991314776"}, {"nombre": "Valeria", "tel": "56934940408"}, {"nombre": "Vanesa Catalán Mena", "tel": "56973893093"}, {"nombre": "Vanessa Lemus Muñoz", "tel": "56986472864"}, {"nombre": "Verónica Aránguiz", "tel": "56976192844"}, {"nombre": "Vielka Araya Plaza", "tel": "56992900671"}, {"nombre": "Violeta Rivera", "tel": "56986493335"}, {"nombre": "Virginia Lopez Sepulveda", "tel": "56956252366"}, {"nombre": "Víctor Núñez", "tel": "56982287607"}, {"nombre": "Ximena  Reyes", "tel": "56963896093"}, {"nombre": "Ximena Bruzza Rojas", "tel": "56971354923"}, {"nombre": "Yasna", "tel": "56979641683"}, {"nombre": "Yerka Hidalgo Montecino", "tel": "56935490038"}, {"nombre": "Yoselyn Castro", "tel": "56983415157"}, {"nombre": "Zita Del Carmen Vergara Aranda", "tel": "56987589115"}, {"nombre": "Alison Urbina", "tel": "56954996998"}, {"nombre": "Benjamin Jara", "tel": "56940706545"}, {"nombre": "Camila Jamen", "tel": "56988541430"}, {"nombre": "Cecilia", "tel": "56958001883"}, {"nombre": "Gonzalo Alberto", "tel": "56979966380"}, {"nombre": "Ingrid", "tel": "56955120494"}, {"nombre": "Joseline Leiva", "tel": "56968477167"}, {"nombre": "Rosario Belen Salazar Ibarra", "tel": "56986285031"}];
+
+const MESSAGE = `✊ CON CHARLAS Y CLASES PRÁCTICAS: ¡SÚMATE A LA ESCUELA SINDICAL 2026!
+
+Hola trabajadores y trabajadoras de Valparaíso, te invitamos a participar en la decimoquinta versión de la Escuela Sindical Arnoldo Camú Veloso, un espacio de formación gratuita y de excelencia organizado por la Escuela de Derecho de la Universidad de Valparaíso.
+
+🗓️ Inauguración: Jueves 16 de abril a las 18:00 horas.
+(El ciclo cuenta con 10 actividades en total, entre charlas magistrales y clases prácticas).
+
+📍 Lugar: Aula Magna Victorio Pescio Vargas, Facultad de Derecho UV. Ubicada en Av. Errázuriz 2120, primer piso, Valparaíso.
+
+⚖️ ¿De qué trata?
+Es una instancia de capacitación para sindicatos, asociaciones de funcionarios y trabajadores/as. Iniciaremos con la charla magistral "Avances legislativos en la protección de derechos laborales", con el senador Diego Ibáñez y el profesor Andrés Ahumada.
+
+🎓 ¿Qué aprenderás?
+Perspectivas teóricas y prácticas sobre el Derecho del Trabajo, de la mano de destacados académicos, académicas, jueces y profesionales del área.
+
+✅ La participación es gratuita y la inscripción se realiza entrando al siguiente link:
+🔗 https://forms.office.com/r/WRwttn3SC6 👈🙌
+
+¡No pierdas la oportunidad de fortalecer tus conocimientos y herramientas en el mundo laboral!
+
+Escuela Sindical Arnoldo Camú Veloso - Universidad de Valparaíso`;
+
+// ── ESTADO ────────────────────────────────────────────────────────────────────
+const TOTAL = CONTACTS.length;
+const OPERATORS = 5;
+let status = JSON.parse(localStorage.getItem('wa_status') || 'null') || CONTACTS.map(() => 'pending');
+let currentIdx = null;
+let currentFilter = 'all';
+let operatorIdx = 0;
+let opStart = 0, opEnd = TOTAL - 1;
+
+// Save state
+function saveState() {
+  try { localStorage.setItem('wa_status', JSON.stringify(status)); } catch(e) {}
+}
+
+// ── OPERATOR RANGE ────────────────────────────────────────────────────────────
+function applyOperatorRange() {
+  operatorIdx = parseInt(document.getElementById('operatorSelect').value);
+  const chunkSize = Math.ceil(TOTAL / OPERATORS);
+  opStart = operatorIdx * chunkSize;
+  opEnd = Math.min(opStart + chunkSize - 1, TOTAL - 1);
+  document.getElementById('opRange').textContent =
+    `Contactos ${opStart + 1} – ${opEnd + 1} (${opEnd - opStart + 1} asignados)`;
+  renderList();
+}
+
+// ── FILTER ────────────────────────────────────────────────────────────────────
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.className = 'filter-btn';
+  });
+  btn.classList.add('active');
+  renderList();
+}
+
+function matchesFilter(i) {
+  if (currentFilter === 'all') return true;
+  return status[i] === currentFilter;
+}
+
+function matchesSearch(i) {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  if (!q) return true;
+  const c = CONTACTS[i];
+  return c.nombre.toLowerCase().includes(q) || c.tel.includes(q);
+}
+
+function visibleIndices() {
+  return CONTACTS.map((_, i) => i).filter(i => matchesFilter(i) && matchesSearch(i));
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+function updateStats() {
+  const sent = status.filter(s => s === 'sent').length;
+  const skip = status.filter(s => s === 'skip').length;
+  const remain = status.filter(s => s === 'pending').length;
+  const pct = Math.round((sent + skip) / TOTAL * 100);
+
+  document.getElementById('statSent').textContent = sent;
+  document.getElementById('statSkip').textContent = skip;
+  document.getElementById('statRemain').textContent = remain;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${sent} / ${TOTAL}`;
+
+  if (sent === TOTAL || (sent + skip) === TOTAL) {
+    document.getElementById('doneSub').textContent =
+      `${sent} mensajes enviados · ${skip} omitidos · ¡Campaña finalizada!`;
+    document.getElementById('doneOverlay').classList.add('show');
+  }
+}
+
+// ── RENDER LIST ───────────────────────────────────────────────────────────────
+function getInitials(name) {
+  const parts = name.trim().split(' ').filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.substring(0, 2).toUpperCase();
+}
+
+function renderList() {
+  const list = document.getElementById('contactList');
+  const indices = visibleIndices();
+  list.innerHTML = '';
+
+  if (indices.length === 0) {
+    list.innerHTML = '<div style="padding:24px;color:var(--text-muted);font-size:13px;text-align:center">Sin resultados</div>';
+    return;
+  }
+
+  indices.forEach(i => {
+    const c = CONTACTS[i];
+    const s = status[i];
+    const div = document.createElement('div');
+    const isTest = i < 2;
+    div.className = `contact-item${i === currentIdx ? ' active' : ''}${s === 'sent' ? ' sent-item' : ''}${s === 'skip' ? ' skip-item' : ''}${isTest ? ' test-item' : ''}`;
+    div.onclick = () => selectContact(i);
+    div.innerHTML = `
+      <div class="contact-avatar">${getInitials(c.nombre)}</div>
+      <div class="contact-info">
+        <div class="contact-name">${c.nombre}</div>
+        <div class="contact-tel">+${c.tel}</div>
+      </div>
+      <div class="status-dot ${s === 'sent' ? 'sent' : s === 'skip' ? 'skip' : ''}"></div>
+      <div class="contact-num">#${i + 1}</div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ── SELECT CONTACT ────────────────────────────────────────────────────────────
+function selectContact(i) {
+  currentIdx = i;
+  renderList();
+  renderPanel();
+  // Scroll list item into view
+  setTimeout(() => {
+    const items = document.querySelectorAll('.contact-item.active');
+    if (items[0]) items[0].scrollIntoView({ block: 'nearest' });
+  }, 50);
+}
+
+function renderPanel() {
+  const panel = document.getElementById('sendPanel');
+  if (currentIdx === null) {
+    panel.innerHTML = '<div class="no-selection"><div class="no-selection-icon">👈</div><div class="no-selection-title">Selecciona un contacto</div></div>';
+    return;
+  }
+
+  const c = CONTACTS[currentIdx];
+  const s = status[currentIdx];
+  const encMsg = encodeURIComponent(MESSAGE);
+  const waUrl = `whatsapp://send?phone=${c.tel}&text=${encMsg}`;
+
+  const isTest = currentIdx < 2;
+  const testBadge = isTest ? '<div class="test-badge">🧪 Contacto de prueba</div>' : '';
+  const sentBadge = s === 'sent'
+    ? '<div class="sent-badge">✅ Enviado</div>'
+    : s === 'skip'
+    ? '<div class="sent-badge" style="border-color:#e67e22;color:#e67e22;background:var(--skip)">⏭ Omitido</div>'
+    : '';
+
+  panel.innerHTML = `
+    <div class="contact-card">
+      <div class="card-num">Contacto #${currentIdx + 1} de ${TOTAL}</div>
+      <div class="card-avatar">${getInitials(c.nombre)}</div>
+      <div class="card-name">${c.nombre}</div>
+      <div class="card-tel">+${c.tel}</div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="copy-action-btn" onclick="copiarNumero()" title="Copiar número al portapapeles">
+          📋 Copiar número
+        </button>
+        <button class="copy-action-btn green" onclick="copiarMensaje()" title="Copiar mensaje al portapapeles">
+          📝 Copiar mensaje
+        </button>
+      </div>
+      ${testBadge}${sentBadge}
+      <div class="card-divider"></div>
+      <div class="card-meta">
+        <div><strong>Estado:</strong> ${s === 'sent' ? '✅ Enviado' : s === 'skip' ? '⏭ Omitido' : '⏳ Pendiente'}</div>
+        <div><strong>Índice:</strong> ${currentIdx + 1} / ${TOTAL}</div>
+        <div><strong>Operador:</strong> ${operatorIdx + 1}</div>
+      </div>
+    </div>
+    <div class="message-panel">
+      <div class="message-label">📨 Mensaje a enviar</div>
+      <div class="message-box" style="position:relative">
+        <button class="copy-btn" onclick="copyMsg()">📋 Copiar</button>
+        ${MESSAGE.replace(/\n/g, '<br>')}
+      </div>
+      <div style="font-size:12px;color:var(--text-muted)">
+        💡 Clic en <strong>Abrir en App WhatsApp</strong> → se abre la app directamente con el chat listo. Presiona <strong>Enviar</strong> en WhatsApp y vuelve aquí con <strong>Alt+Tab</strong>.
+      </div>
+    </div>
+  `;
+
+  // Update sent button label
+  const sentBtn = document.getElementById('sentBtn');
+  if (sentBtn) {
+    if (s === 'sent') {
+      sentBtn.textContent = '↩️ Desmarcar enviado';
+      sentBtn.style.borderColor = '#e67e22';
+      sentBtn.style.color = '#e67e22';
+      sentBtn.style.background = 'var(--skip)';
+    } else {
+      sentBtn.textContent = '✅ Marcar enviado';
+      sentBtn.style.borderColor = '';
+      sentBtn.style.color = '';
+      sentBtn.style.background = '';
+    }
+  }
+
+  // Update both WA buttons
+  document.getElementById('waBtn').dataset.url = waUrl;
+  const topBtn = document.getElementById('waBtnTop');
+  if (topBtn) {
+    topBtn.href = waUrl;
+    topBtn.classList.remove('disabled');
+  }
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────────
+function abrirWhatsApp() {
+  if (currentIdx === null) return;
+  const c = CONTACTS[currentIdx];
+  // Protocolo whatsapp:// abre directamente la app instalada en el PC
+  // El texto va en el parámetro text= igual que wa.me
+  const url = 'whatsapp://send?phone=' + c.tel + '&text=' + encodeURIComponent(MESSAGE);
+  window.location.href = url;
+  onSendClick();
+}
+
+function onSendClick() {
+  // noop — marcado manual por el usuario
+}
+
+function markSent() {
+  if (currentIdx === null) return;
+  if (status[currentIdx] === 'sent') {
+    // DESMARCAR
+    status[currentIdx] = 'pending';
+    saveState();
+    updateStats();
+    showToast('↩️ Desmarcado — vuelve a pendiente', 'orange');
+    renderList();
+    renderPanel();
+  } else {
+    status[currentIdx] = 'sent';
+    saveState();
+    updateStats();
+    showToast('✅ Marcado como enviado', 'green');
+    renderList();
+    renderPanel();
+    setTimeout(() => navigate(1), 400);
+  }
+}
+
+function markSkip() {
+  if (currentIdx === null) return;
+  status[currentIdx] = 'skip';
+  saveState();
+  updateStats();
+  showToast('⏭ Omitido', 'orange');
+  renderList();
+  renderPanel();
+  setTimeout(() => navigate(1), 300);
+}
+
+function navigate(dir) {
+  const indices = visibleIndices();
+  if (indices.length === 0) return;
+
+  if (currentIdx === null) {
+    selectContact(indices[0]);
+    return;
+  }
+
+  const pos = indices.indexOf(currentIdx);
+  const nextPos = pos + dir;
+
+  if (nextPos >= 0 && nextPos < indices.length) {
+    selectContact(indices[nextPos]);
+  }
+}
+
+function copiarNumero() {
+  if (currentIdx === null) return;
+  const num = '+' + CONTACTS[currentIdx].tel;
+  navigator.clipboard.writeText(num).then(() => {
+    showToast('📋 Número copiado: ' + num, 'green');
+    // Flash the button
+    const btns = document.querySelectorAll('.copy-action-btn:not(.green)');
+    btns.forEach(b => { b.classList.add('flash'); setTimeout(() => b.classList.remove('flash'), 1200); });
+  });
+}
+
+function copiarMensaje() {
+  if (currentIdx === null) return;
+  navigator.clipboard.writeText(MESSAGE).then(() => {
+    showToast('📝 Mensaje copiado — pégalo en WhatsApp', 'green');
+    const btns = document.querySelectorAll('.copy-action-btn.green');
+    btns.forEach(b => { b.classList.add('flash'); setTimeout(() => b.classList.remove('flash'), 1200); });
+  });
+}
+
+function copyMsg() {
+  navigator.clipboard.writeText(MESSAGE).then(() => showToast('📋 Mensaje copiado', 'green'));
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── KEYBOARD ─────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); navigate(1); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); navigate(-1); }
+  if (e.key === 'Enter') { if (currentIdx !== null) abrirWhatsApp(); }
+  if (e.key === 's' || e.key === 'S') markSent();
+  if (e.key === 'o' || e.key === 'O') markSkip();
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+applyOperatorRange();
+updateStats();
+renderList();
+// Disable top WA btn until a contact is selected
+const _topBtn = document.getElementById('waBtnTop');
+if (_topBtn) _topBtn.classList.add('disabled');
+</script>
+</body>
+</html>
